@@ -1,0 +1,6 @@
+dist
+.expo
+android
+ios
+package-lock.json
+assets
