@@ -17,6 +17,7 @@ import { scheduleOnRN } from "react-native-worklets";
 
 import { colors } from "@/constants/colors";
 import type { Candle } from "@/data/types";
+import type { Trade } from "@/engine/paperBroker";
 import { formatPrice, formatTime } from "@/utils/format";
 
 import { priceTicks, timeTicks } from "./axes";
@@ -27,6 +28,7 @@ import {
   PRICE_AXIS_WIDTH,
 } from "./chartLayout";
 import { CrosshairTooltip } from "./CrosshairTooltip";
+import { tradeMarkers } from "./markers";
 
 // Hold this long before dragging shows the crosshair. Shorter would trigger
 // on ordinary scrolls past the chart.
@@ -35,15 +37,18 @@ const CROSSHAIR_DELAY_MS = 250;
 const BODY_WIDTH = CANDLE_SPACING * 0.7;
 const LABEL_SIZE = 10;
 const PRICE_TAG_HEIGHT = 16;
+const MARKER_HALF_WIDTH = 5;
+const MARKER_HEIGHT = 7;
 
 interface Props {
   candles: readonly Candle[];
   lastPrice: number;
   /** Previous session's close. Colours the price tag green or red. */
   prevClose: number;
+  trades: readonly Trade[];
 }
 
-export function CandleChart({ candles, lastPrice, prevClose }: Props) {
+export function CandleChart({ candles, lastPrice, prevClose, trades }: Props) {
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   const onLayout = (event: LayoutChangeEvent) => {
@@ -187,6 +192,38 @@ export function CandleChart({ candles, lastPrice, prevClose }: Props) {
   const horizontalStart = useDerivedValue(() => vec(geometry.get().left, touchY.get()));
   const horizontalEnd = useDerivedValue(() => vec(geometry.get().right, touchY.get()));
 
+  // Filled arrows for the user's own orders, outlines for stop-loss exits, so
+  // it's clear afterwards which trades they chose and which were forced.
+  const markerPaths = useMemo(() => {
+    const buys = Skia.PathBuilder.Make();
+    const sells = Skia.PathBuilder.Make();
+    const stopBuys = Skia.PathBuilder.Make();
+    const stopSells = Skia.PathBuilder.Make();
+    const builders = {
+      buy: { manual: buys, stop: stopBuys },
+      sell: { manual: sells, stop: stopSells },
+    };
+
+    for (const marker of tradeMarkers(trades, candles, layout)) {
+      const { x, y } = marker;
+      // The tip touches (x, y); the base sits further from the candle
+      const baseY = marker.side === "buy" ? y + MARKER_HEIGHT : y - MARKER_HEIGHT;
+      const path = builders[marker.side][marker.reason];
+
+      path.moveTo(x, y);
+      path.lineTo(x - MARKER_HALF_WIDTH, baseY);
+      path.lineTo(x + MARKER_HALF_WIDTH, baseY);
+      path.close();
+    }
+
+    return {
+      buys: buys.detach(),
+      sells: sells.detach(),
+      stopBuys: stopBuys.detach(),
+      stopSells: stopSells.detach(),
+    };
+  }, [trades, candles, layout]);
+
   const tagColor = lastPrice >= prevClose ? colors.up : colors.down;
   const { plot } = layout;
   const hoveredCandle = hoverIndex === null ? undefined : candles[hoverIndex];
@@ -218,6 +255,21 @@ export function CandleChart({ candles, lastPrice, prevClose }: Props) {
             />
             <Path path={paths.upBodies} color={colors.up} />
             <Path path={paths.downBodies} color={colors.down} />
+
+            <Path path={markerPaths.buys} color={colors.up} />
+            <Path path={markerPaths.sells} color={colors.down} />
+            <Path
+              path={markerPaths.stopBuys}
+              color={colors.up}
+              style="stroke"
+              strokeWidth={1.5}
+            />
+            <Path
+              path={markerPaths.stopSells}
+              color={colors.down}
+              style="stroke"
+              strokeWidth={1.5}
+            />
 
             {prices.map((price) => (
               <Text
