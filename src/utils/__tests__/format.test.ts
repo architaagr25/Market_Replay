@@ -1,4 +1,10 @@
-import { formatDate, formatPrice, formatRupees, formatTime } from "../format";
+import {
+  formatChange,
+  formatDate,
+  formatPrice,
+  formatRupees,
+  formatTime,
+} from "../format";
 
 describe("formatTime", () => {
   it("shows IST wall-clock time", () => {
@@ -34,5 +40,16 @@ describe("formatDate", () => {
   it("writes the date out with its weekday", () => {
     expect(formatDate("2024-06-04")).toBe("Tue, 4 Jun 2024");
     expect(formatDate("2020-03-13")).toBe("Fri, 13 Mar 2020");
+  });
+});
+
+describe("formatChange", () => {
+  it("shows the move in points and percent", () => {
+    expect(formatChange(8624.05, 9590.15)).toBe("-966.10 (-10.07%)");
+    expect(formatChange(14281.2, 13634.6)).toBe("+646.60 (+4.74%)");
+  });
+
+  it("has no sign when unchanged", () => {
+    expect(formatChange(100, 100)).toBe("0.00 (0.00%)");
   });
 });

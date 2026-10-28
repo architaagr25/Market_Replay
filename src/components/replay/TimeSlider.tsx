@@ -126,8 +126,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   track: {
-    height: 4,
-    borderRadius: 2,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: colors.grid,
     overflow: "hidden",
   },
@@ -142,8 +142,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     bottom: 0,
-    backgroundColor: colors.muted,
-    opacity: 0.5,
+    backgroundColor: colors.warning,
   },
   thumb: {
     position: "absolute",

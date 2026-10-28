@@ -56,3 +56,11 @@ export function formatDate(isoDate: string): string {
   const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
   return `${WEEKDAYS[weekday]}, ${day} ${MONTHS[month - 1]} ${year}`;
 }
+
+/** "-966.10 (-10.07%)": move since the previous close, in points and percent. */
+export function formatChange(price: number, prevClose: number): string {
+  const points = price - prevClose;
+  const percent = (points / prevClose) * 100;
+  const sign = (value: number) => (value > 0 ? "+" : value < 0 ? "-" : "");
+  return `${sign(points)}${formatPrice(Math.abs(points))} (${sign(percent)}${Math.abs(percent).toFixed(2)}%)`;
+}

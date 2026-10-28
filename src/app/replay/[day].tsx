@@ -1,9 +1,11 @@
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { CandleChart } from "@/components/chart/CandleChart";
+import { HaltBanner } from "@/components/replay/HaltBanner";
 import { OrderPanel } from "@/components/replay/OrderPanel";
+import { PriceHeader } from "@/components/replay/PriceHeader";
 import { ReplayControls } from "@/components/replay/ReplayControls";
 import { TimeSlider } from "@/components/replay/TimeSlider";
 import { colors } from "@/constants/colors";
@@ -37,14 +39,42 @@ function Replay({ title, day }: { title: string; day: TradingDay }) {
     setNotice(result.ok ? null : result.reason);
   };
 
+  const confirmReset = () => {
+    Alert.alert("Start over?", "This clears your trades and goes back to the open.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Start over",
+        style: "destructive",
+        onPress: () => {
+          replay.reset();
+          setNotice(null);
+        },
+      },
+    ]);
+  };
+
+  const hasTraded = replay.account.trades.length > 0;
+
   return (
     <ScrollView
       style={styles.screen}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <Stack.Screen options={{ title }} />
-      <Text style={styles.price}>{replay.snapshot.lastPrice.toFixed(2)}</Text>
+      <Stack.Screen
+        options={{
+          title,
+          headerRight: hasTraded
+            ? () => (
+                <Pressable onPress={confirmReset} hitSlop={8} accessibilityRole="button">
+                  <Text style={styles.reset}>Reset</Text>
+                </Pressable>
+              )
+            : undefined,
+        }}
+      />
+      <PriceHeader price={replay.snapshot.lastPrice} prevClose={day.prevClose} />
+      {replay.halt && <HaltBanner halt={replay.halt} />}
       <View style={styles.chart}>
         <CandleChart
           candles={replay.snapshot.candles}
@@ -95,11 +125,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  price: {
-    fontSize: 28,
+  reset: {
+    fontSize: 15,
     fontWeight: "600",
-    color: colors.text,
-    fontVariant: ["tabular-nums"],
+    color: colors.down,
   },
   chart: {
     height: 280,
