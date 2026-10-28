@@ -34,6 +34,7 @@ function Replay({ title, day }: { title: string; day: TradingDay }) {
       <View style={styles.chart}>
         <CandleChart
           candles={replay.snapshot.candles}
+          prevClose={day.prevClose}
           lastPrice={replay.snapshot.lastPrice}
         />
       </View>
