@@ -23,3 +23,8 @@ export function isWithinMarketHours(timestamp: number): boolean {
   const minute = istMinuteOfDay(timestamp);
   return minute >= MARKET_OPEN_MINUTE && minute < MARKET_CLOSE_MINUTE;
 }
+
+/** The IST calendar date ("YYYY-MM-DD") a UTC timestamp falls on. */
+export function istDate(timestamp: number): string {
+  return new Date(timestamp + IST_OFFSET_MINUTES * 60_000).toISOString().slice(0, 10);
+}
