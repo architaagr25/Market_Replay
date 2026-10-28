@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -13,6 +13,7 @@ import { findDay } from "@/data/catalog";
 import { loadDay } from "@/data/loadDay";
 import type { TradingDay } from "@/data/types";
 import { useReplay } from "@/hooks/useReplay";
+import { saveResult } from "@/state/sessionResults";
 
 export default function ReplayScreen() {
   const { day: id } = useLocalSearchParams<{ day: string }>();
@@ -55,6 +56,11 @@ function Replay({ title, day }: { title: string; day: TradingDay }) {
 
   const hasTraded = replay.account.trades.length > 0;
 
+  const showResults = () => {
+    saveResult(day.date, replay.account);
+    router.push({ pathname: "/result/[day]", params: { day: day.date } });
+  };
+
   return (
     <ScrollView
       style={styles.screen}
@@ -75,6 +81,15 @@ function Replay({ title, day }: { title: string; day: TradingDay }) {
       />
       <PriceHeader price={replay.snapshot.lastPrice} prevClose={day.prevClose} />
       {replay.halt && <HaltBanner halt={replay.halt} />}
+      {replay.isFinished && (
+        <Pressable
+          style={({ pressed }) => [styles.results, pressed && { opacity: 0.85 }]}
+          onPress={showResults}
+          accessibilityRole="button"
+        >
+          <Text style={styles.resultsText}>Market closed · See your results</Text>
+        </Pressable>
+      )}
       <View style={styles.chart}>
         <CandleChart
           candles={replay.snapshot.candles}
@@ -124,6 +139,17 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  results: {
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    backgroundColor: colors.text,
+  },
+  resultsText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "700",
   },
   reset: {
     fontSize: 15,

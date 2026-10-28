@@ -141,3 +141,19 @@ describe("candleIndexAtX", () => {
     expect(candleIndexAtX(10, 0, 8, 0, 0)).toBe(-1);
   });
 });
+
+describe("fitting a whole session", () => {
+  it("shows every candle when the spacing is chosen to fit them", () => {
+    const candles = day(375);
+    const width = 333 + PRICE_AXIS_WIDTH;
+    const layout = computeLayout({
+      candles,
+      width,
+      height: HEIGHT,
+      lastPrice: 100,
+      spacing: 333 / 375,
+    });
+
+    expect(layout.firstIndex).toBe(0);
+  });
+});

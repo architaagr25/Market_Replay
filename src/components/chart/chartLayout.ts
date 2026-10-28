@@ -82,7 +82,9 @@ export function computeLayout({
     bottom: Math.max(8, height - TIME_AXIS_HEIGHT),
   };
 
-  const fits = Math.max(1, Math.floor((plot.right - plot.left) / spacing));
+  // The tiny epsilon stops float rounding (374.99999 candles) from dropping
+  // the first candle when the spacing was chosen to fit an exact count.
+  const fits = Math.max(1, Math.floor((plot.right - plot.left) / spacing + 1e-9));
   const firstIndex = Math.max(0, candles.length - fits);
 
   let low = lastPrice;

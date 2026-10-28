@@ -34,7 +34,6 @@ import { tradeMarkers } from "./markers";
 // on ordinary scrolls past the chart.
 const CROSSHAIR_DELAY_MS = 250;
 
-const BODY_WIDTH = CANDLE_SPACING * 0.7;
 const LABEL_SIZE = 10;
 const PRICE_TAG_HEIGHT = 16;
 const MARKER_HALF_WIDTH = 5;
@@ -46,9 +45,20 @@ interface Props {
   /** Previous session's close. Colours the price tag green or red. */
   prevClose: number;
   trades: readonly Trade[];
+  /**
+   * Squeeze the whole session into the width instead of following the latest
+   * candles. Used for the end-of-day overview.
+   */
+  fitAll?: boolean;
 }
 
-export function CandleChart({ candles, lastPrice, prevClose, trades }: Props) {
+export function CandleChart({
+  candles,
+  lastPrice,
+  prevClose,
+  trades,
+  fitAll = false,
+}: Props) {
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   const onLayout = (event: LayoutChangeEvent) => {
@@ -66,9 +76,15 @@ export function CandleChart({ candles, lastPrice, prevClose, trades }: Props) {
     [],
   );
 
+  const spacing =
+    fitAll && candles.length > 0 && size.width > PRICE_AXIS_WIDTH
+      ? (size.width - PRICE_AXIS_WIDTH) / candles.length
+      : CANDLE_SPACING;
+  const bodyWidth = Math.max(1, spacing * 0.7);
+
   const layout = useMemo(
-    () => computeLayout({ candles, lastPrice, ...size }),
-    [candles, lastPrice, size],
+    () => computeLayout({ candles, lastPrice, spacing, ...size }),
+    [candles, lastPrice, spacing, size],
   );
 
   // All green candles go into one path and all red ones into another, so the
@@ -94,7 +110,7 @@ export function CandleChart({ candles, lastPrice, prevClose, trades }: Props) {
       // Keep doji candles visible as a thin line rather than nothing
       const height = Math.max(1, bottom - top);
       (up ? upBodies : downBodies).addRect(
-        Skia.XYWHRect(cx - BODY_WIDTH / 2, top, BODY_WIDTH, height),
+        Skia.XYWHRect(cx - bodyWidth / 2, top, bodyWidth, height),
       );
     }
 
@@ -104,7 +120,7 @@ export function CandleChart({ candles, lastPrice, prevClose, trades }: Props) {
       upWicks: upWicks.detach(),
       downWicks: downWicks.detach(),
     };
-  }, [candles, layout]);
+  }, [candles, layout, bodyWidth]);
 
   const lastY = layout.y(lastPrice);
 
@@ -119,8 +135,8 @@ export function CandleChart({ candles, lastPrice, prevClose, trades }: Props) {
   );
 
   const times = useMemo(
-    () => timeTicks(candles, layout.firstIndex, CANDLE_SPACING),
-    [candles, layout.firstIndex],
+    () => timeTicks(candles, layout.firstIndex, spacing),
+    [candles, layout.firstIndex, spacing],
   );
 
   // --- Crosshair ---------------------------------------------------------
@@ -135,6 +151,7 @@ export function CandleChart({ candles, lastPrice, prevClose, trades }: Props) {
     bottom: 0,
     firstIndex: 0,
     count: 0,
+    spacing: CANDLE_SPACING,
   });
   const touchX = useSharedValue(-1);
   const touchY = useSharedValue(-1);
@@ -149,17 +166,18 @@ export function CandleChart({ candles, lastPrice, prevClose, trades }: Props) {
       bottom: layout.plot.bottom,
       firstIndex: layout.firstIndex,
       count: candles.length,
+      spacing,
     });
-  }, [geometry, layout, candles.length]);
+  }, [geometry, layout, candles.length, spacing]);
 
   const moveCrosshair = (x: number, y: number) => {
     "worklet";
     const g = geometry.get();
-    const index = candleIndexAtX(x, g.left, CANDLE_SPACING, g.firstIndex, g.count);
+    const index = candleIndexAtX(x, g.left, g.spacing, g.firstIndex, g.count);
     if (index < 0) return;
 
     // Snap to the middle of the candle rather than following the finger exactly
-    touchX.set(g.left + (index - g.firstIndex + 0.5) * CANDLE_SPACING);
+    touchX.set(g.left + (index - g.firstIndex + 0.5) * g.spacing);
     touchY.set(Math.min(g.bottom, Math.max(g.top, y)));
 
     if (index !== hovered.get()) {
