@@ -1,5 +1,8 @@
 import { Canvas, Group, Line, Rect, vec } from "@shopify/react-native-skia";
+import { Link } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
+
+import { DAYS } from "@/data/catalog";
 
 const GREEN = "#00b386";
 const RED = "#eb5b3c";
@@ -38,6 +41,11 @@ export default function Home() {
         })}
       </Canvas>
       <Text style={styles.title}>Market Replay</Text>
+      {DAYS.map((day) => (
+        <Link key={day.id} href={{ pathname: "/replay/[day]", params: { day: day.id } }}>
+          <Text style={styles.link}>{day.title}</Text>
+        </Link>
+      ))}
     </View>
   );
 }
@@ -56,5 +64,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "600",
+  },
+  link: {
+    fontSize: 16,
+    color: GREEN,
+    paddingVertical: 4,
   },
 });
