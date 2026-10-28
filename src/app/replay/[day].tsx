@@ -1,8 +1,10 @@
 import { Stack, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { CandleChart } from "@/components/chart/CandleChart";
 import { ReplayControls } from "@/components/replay/ReplayControls";
+import { TimeSlider } from "@/components/replay/TimeSlider";
 import { colors } from "@/constants/colors";
 import { findDay } from "@/data/catalog";
 import { loadDay } from "@/data/loadDay";
@@ -27,6 +29,12 @@ export default function ReplayScreen() {
 
 function Replay({ title, day }: { title: string; day: TradingDay }) {
   const replay = useReplay(day);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const seek = (time: number) => {
+    const result = replay.seek(time);
+    setNotice(result.ok ? null : result.reason);
+  };
 
   return (
     <View style={styles.screen}>
@@ -49,6 +57,14 @@ function Replay({ title, day }: { title: string; day: TradingDay }) {
         onPause={replay.pause}
         onSpeedChange={replay.setSpeed}
       />
+      <TimeSlider
+        time={replay.time}
+        start={replay.start}
+        end={replay.end}
+        halts={replay.halts}
+        onSeek={seek}
+      />
+      {notice && <Text style={styles.notice}>{notice}</Text>}
     </View>
   );
 }
@@ -73,5 +89,9 @@ const styles = StyleSheet.create({
   },
   chart: {
     height: 320,
+  },
+  notice: {
+    fontSize: 13,
+    color: colors.down,
   },
 });
