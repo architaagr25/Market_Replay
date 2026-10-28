@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AppState } from "react-native";
 
 import type { TradingDay } from "@/data/types";
 import { snapshotAt } from "@/engine/candleBuilder";
@@ -101,6 +102,17 @@ export function useReplay(day: TradingDay) {
     clock.pause();
     setIsPlaying(false);
   }, [clock]);
+
+  // Pause when the app leaves the foreground. Android stops delivering
+  // animation frames in the background anyway, but the clock would still think
+  // it was playing, and someone coming back mid-crash should find the replay
+  // where they left it. It stays paused on return; resuming is their call.
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state !== "active") pause();
+    });
+    return () => subscription.remove();
+  }, [pause]);
 
   const setSpeed = useCallback(
     (next: number) => {

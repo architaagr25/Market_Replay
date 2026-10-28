@@ -1,4 +1,5 @@
 import { act, renderHook } from "@testing-library/react-native";
+import { AppState, type AppStateStatus } from "react-native";
 
 import { makeDay, MINUTE, OPEN, SECOND } from "@/engine/__fixtures__/makeDay";
 
@@ -182,5 +183,53 @@ describe("useReplay", () => {
     });
 
     expect(result.current.time).toBe(OPEN + MINUTE);
+  });
+});
+
+describe("app going to the background", () => {
+  // Grab the listener the hook registers so the test can play the OS
+  function captureAppStateListener() {
+    let listener: ((state: AppStateStatus) => void) | undefined;
+    const remove = jest.fn();
+    jest.spyOn(AppState, "addEventListener").mockImplementation((_type, handler) => {
+      listener = handler;
+      return { remove };
+    });
+    return { send: (state: AppStateStatus) => listener?.(state), remove };
+  }
+
+  it("pauses the replay and keeps the position", async () => {
+    const appState = captureAppStateListener();
+    const { result } = await setup();
+
+    await act(async () => result.current.play());
+    await advance(500);
+    const leftAt = result.current.time;
+
+    await act(async () => appState.send("background"));
+    await advance(5_000);
+
+    expect(result.current.isPlaying).toBe(false);
+    expect(result.current.time).toBe(leftAt);
+  });
+
+  it("stays paused when the app comes back", async () => {
+    const appState = captureAppStateListener();
+    const { result } = await setup();
+
+    await act(async () => result.current.play());
+    await act(async () => appState.send("background"));
+    await act(async () => appState.send("active"));
+
+    expect(result.current.isPlaying).toBe(false);
+  });
+
+  it("stops listening on unmount", async () => {
+    const appState = captureAppStateListener();
+    const { unmount } = await setup();
+
+    await unmount();
+
+    expect(appState.remove).toHaveBeenCalled();
   });
 });
