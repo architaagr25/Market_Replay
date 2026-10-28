@@ -18,6 +18,7 @@ import { scheduleOnRN } from "react-native-worklets";
 import { colors } from "@/constants/colors";
 import type { Candle } from "@/data/types";
 import type { Trade } from "@/engine/paperBroker";
+import { useMountAfterTransition } from "@/hooks/useMountAfterTransition";
 import { formatPrice, formatTime } from "@/utils/format";
 
 import { priceTicks, timeTicks } from "./axes";
@@ -60,6 +61,7 @@ export function CandleChart({
   fitAll = false,
 }: Props) {
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const canvasReady = useMountAfterTransition();
 
   const onLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -249,7 +251,7 @@ export function CandleChart({
   return (
     <GestureDetector gesture={crosshairGesture}>
       <View style={styles.container} onLayout={onLayout}>
-        {size.width > 0 && (
+        {canvasReady && size.width > 0 && (
           <Canvas style={StyleSheet.absoluteFill}>
             {prices.map((price) => {
               const y = layout.y(price);

@@ -1,5 +1,6 @@
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CandleChart } from "@/components/chart/CandleChart";
 import { colors } from "@/constants/colors";
@@ -42,9 +43,13 @@ function Result({
   const summary = summarizeSession(account, day);
   const vsHold = summary.netPnl - summary.buyAndHold.pnl;
   const didNothing = summary.tradeCount === 0;
+  const insets = useSafeAreaInsets();
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={[styles.content, { paddingBottom: 16 + insets.bottom }]}
+    >
       <Stack.Screen options={{ title: "Your results" }} />
 
       <View style={styles.hero}>

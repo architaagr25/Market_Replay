@@ -1,4 +1,5 @@
 import { FlatList, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DayCard } from "@/components/DayCard";
 import { colors } from "@/constants/colors";
@@ -6,10 +7,13 @@ import { DAYS } from "@/data/catalog";
 import { STARTING_CASH } from "@/engine/paperBroker";
 
 export default function Home() {
+  // Android draws edge to edge, so keep the last card clear of the nav bar
+  const insets = useSafeAreaInsets();
+
   return (
     <FlatList
       style={styles.screen}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingBottom: 16 + insets.bottom }]}
       data={DAYS}
       keyExtractor={(day) => day.id}
       renderItem={({ item }) => <DayCard day={item} />}

@@ -1,6 +1,7 @@
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CandleChart } from "@/components/chart/CandleChart";
 import { HaltBanner } from "@/components/replay/HaltBanner";
@@ -34,6 +35,7 @@ export default function ReplayScreen() {
 function Replay({ title, day }: { title: string; day: TradingDay }) {
   const replay = useReplay(day);
   const [notice, setNotice] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
 
   const seek = (time: number) => {
     const result = replay.seek(time);
@@ -64,7 +66,7 @@ function Replay({ title, day }: { title: string; day: TradingDay }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingBottom: 16 + insets.bottom }]}
       keyboardShouldPersistTaps="handled"
     >
       <Stack.Screen
