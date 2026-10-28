@@ -30,3 +30,29 @@ export function formatRupees(amount: number, { signed = false } = {}): string {
   const sign = amount < 0 && !isZero ? "-" : signed && !isZero ? "+" : "";
   return `${sign}₹${digits}`;
 }
+
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+/**
+ * "Tue, 4 Jun 2024" from "2024-06-04". Done by hand rather than with
+ * toLocaleDateString so it can't shift a day depending on the phone's time zone.
+ */
+export function formatDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split("-").map(Number) as [number, number, number];
+  const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+  return `${WEEKDAYS[weekday]}, ${day} ${MONTHS[month - 1]} ${year}`;
+}

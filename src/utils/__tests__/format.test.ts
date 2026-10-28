@@ -1,4 +1,4 @@
-import { formatPrice, formatRupees, formatTime } from "../format";
+import { formatDate, formatPrice, formatRupees, formatTime } from "../format";
 
 describe("formatTime", () => {
   it("shows IST wall-clock time", () => {
@@ -27,5 +27,12 @@ describe("formatRupees", () => {
   it("never shows a signed zero", () => {
     expect(formatRupees(-0.001, { signed: true })).toBe("₹0.00");
     expect(formatRupees(0, { signed: true })).toBe("₹0.00");
+  });
+});
+
+describe("formatDate", () => {
+  it("writes the date out with its weekday", () => {
+    expect(formatDate("2024-06-04")).toBe("Tue, 4 Jun 2024");
+    expect(formatDate("2020-03-13")).toBe("Fri, 13 Mar 2020");
   });
 });
