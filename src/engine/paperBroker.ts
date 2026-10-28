@@ -178,6 +178,30 @@ function applyFill(position: number, avgPrice: number, signed: number, price: nu
 }
 
 /**
+ * The biggest order on `side` that placeOrder would accept at `price`.
+ *
+ * An order against the current position first closes it, which is always
+ * allowed, and anything beyond that opens a new position, which has to fit
+ * the buying power. Mirrors the rule in placeOrder so the "Max" button never
+ * suggests an order that then gets rejected.
+ */
+export function maxQuantity(account: Account, side: Side, price: number): number {
+  if (!(price > 0)) return 0;
+
+  const buyingPower = equity(account, price) - BROKERAGE_PER_ORDER;
+  const affordable = Math.max(0, Math.floor(buyingPower / price));
+  const held = Math.abs(account.position);
+  const sameDirection =
+    account.position === 0 || account.position > 0 === (side === "buy");
+
+  if (sameDirection) return Math.max(0, affordable - held);
+  // Close the whole position, then open up to whichever is larger: what's
+  // affordable, or a flip no bigger than the position just closed (which
+  // placeOrder allows because it doesn't grow the exposure).
+  return held + Math.max(affordable, held);
+}
+
+/**
  * Sets or clears a stop-loss on the open position. A long's stop has to be
  * below the current price and a short's above it, otherwise it would fire
  * straight away.

@@ -1,8 +1,9 @@
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { CandleChart } from "@/components/chart/CandleChart";
+import { OrderPanel } from "@/components/replay/OrderPanel";
 import { ReplayControls } from "@/components/replay/ReplayControls";
 import { TimeSlider } from "@/components/replay/TimeSlider";
 import { colors } from "@/constants/colors";
@@ -37,7 +38,11 @@ function Replay({ title, day }: { title: string; day: TradingDay }) {
   };
 
   return (
-    <View style={styles.screen}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+    >
       <Stack.Screen options={{ title }} />
       <Text style={styles.price}>{replay.snapshot.lastPrice.toFixed(2)}</Text>
       <View style={styles.chart}>
@@ -65,7 +70,14 @@ function Replay({ title, day }: { title: string; day: TradingDay }) {
         onSeek={seek}
       />
       {notice && <Text style={styles.notice}>{notice}</Text>}
-    </View>
+      <OrderPanel
+        account={replay.account}
+        price={replay.snapshot.lastPrice}
+        isHalted={replay.halt !== null}
+        onOrder={replay.placeOrder}
+        onSetStopLoss={replay.setStopLoss}
+      />
+    </ScrollView>
   );
 }
 
@@ -73,6 +85,8 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  content: {
     padding: 16,
     gap: 12,
   },
@@ -88,7 +102,7 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"],
   },
   chart: {
-    height: 320,
+    height: 280,
   },
   notice: {
     fontSize: 13,

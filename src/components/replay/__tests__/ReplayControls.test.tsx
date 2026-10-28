@@ -29,7 +29,7 @@ describe("ReplayControls", () => {
   it("plays when paused", async () => {
     const { props } = await setup();
 
-    fireEvent.press(screen.getByLabelText("Play"));
+    await fireEvent.press(screen.getByLabelText("Play"));
 
     expect(props.onPlay).toHaveBeenCalled();
   });
@@ -37,7 +37,7 @@ describe("ReplayControls", () => {
   it("pauses when playing", async () => {
     const { props } = await setup({ isPlaying: true });
 
-    fireEvent.press(screen.getByLabelText("Pause"));
+    await fireEvent.press(screen.getByLabelText("Pause"));
 
     expect(props.onPause).toHaveBeenCalled();
   });
@@ -54,7 +54,7 @@ describe("ReplayControls", () => {
     expect(screen.getByLabelText("60 times speed")).toBeSelected();
     expect(screen.getByLabelText("300 times speed")).not.toBeSelected();
 
-    fireEvent.press(screen.getByLabelText("300 times speed"));
+    await fireEvent.press(screen.getByLabelText("300 times speed"));
     expect(props.onSpeedChange).toHaveBeenCalledWith(300);
   });
 });

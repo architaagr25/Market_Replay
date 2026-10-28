@@ -5,6 +5,7 @@ import {
   checkStopLoss,
   createAccount,
   equity,
+  maxQuantity,
   netPnl,
   type Order,
   placeOrder,
@@ -239,5 +240,42 @@ describe("stop-loss", () => {
     const withStop = (setStopLoss(long, 21_900, 22_000) as { account: Account }).account;
 
     expect(fill(withStop, order("sell", 4, 22_000)).stopLoss).toBe(21_900);
+  });
+});
+
+describe("maxQuantity", () => {
+  it("is what the cash covers when flat", () => {
+    // (1,00,000 - 20) / 22,000 = 4.5
+    expect(maxQuantity(createAccount(100_000), "buy", 22_000)).toBe(4);
+    expect(maxQuantity(createAccount(100_000), "sell", 22_000)).toBe(4);
+  });
+
+  it("counts what's already held when adding to a position", () => {
+    const account = fill(createAccount(100_000), order("buy", 3, 22_000));
+
+    expect(maxQuantity(account, "buy", 22_000)).toBe(1);
+  });
+
+  it("allows closing and then flipping the other way", () => {
+    const account = fill(createAccount(100_000), order("buy", 3, 22_000));
+
+    // Close 3, then open up to 4 short
+    expect(maxQuantity(account, "sell", 22_000)).toBe(7);
+  });
+
+  it("never suggests an order that placeOrder would reject", () => {
+    const cases: [Account, Order["side"], number][] = [
+      [createAccount(100_000), "buy", 22_000],
+      [fill(createAccount(100_000), order("buy", 3, 22_000)), "buy", 21_000],
+      [fill(createAccount(100_000), order("buy", 3, 22_000)), "sell", 15_000],
+      [fill(createAccount(100_000), order("sell", 4, 22_000)), "buy", 30_000],
+      [fill(createAccount(100_000), order("sell", 4, 22_000)), "sell", 24_000],
+    ];
+
+    for (const [account, side, price] of cases) {
+      const max = maxQuantity(account, side, price);
+      if (max > 0) expect(placeOrder(account, order(side, max, price)).ok).toBe(true);
+      expect(placeOrder(account, order(side, max + 1, price)).ok).toBe(false);
+    }
   });
 });

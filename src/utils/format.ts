@@ -15,3 +15,18 @@ export function formatPrice(price: number): string {
     maximumFractionDigits: 2,
   });
 }
+
+/**
+ * "₹1,23,456.78". With `signed`, gains get a "+" and losses a "-" in front of
+ * the rupee sign, the way P&L is usually shown in Indian broker apps.
+ */
+export function formatRupees(amount: number, { signed = false } = {}): string {
+  const digits = Math.abs(amount).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  // Something that rounds to 0.00 shouldn't show up as "-₹0.00"
+  const isZero = Math.abs(amount) < 0.005;
+  const sign = amount < 0 && !isZero ? "-" : signed && !isZero ? "+" : "";
+  return `${sign}₹${digits}`;
+}
