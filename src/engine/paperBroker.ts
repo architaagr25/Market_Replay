@@ -1,5 +1,6 @@
 import type { Candle } from "@/data/types";
 
+import { type Halt, haltAt, tradingWindows } from "./halts";
 import { firstCrossing } from "./pricePath";
 
 /** ₹10 lakh of practice money. */
@@ -205,9 +206,31 @@ export function setStopLoss(
 }
 
 /**
+ * What the order ticket calls: placeOrder, but refused while trading is
+ * halted, the way a real exchange would reject it.
+ */
+export function submitOrder(
+  account: Account,
+  order: Order,
+  halts: readonly Halt[],
+): BrokerResult {
+  if (haltAt(halts, order.time)) {
+    return {
+      ok: false,
+      reason: "Trading is halted. Orders open again when the market resumes.",
+    };
+  }
+  return placeOrder(account, order);
+}
+
+/**
  * Checks whether the stop-loss was hit between two market times (normally the
  * previous frame and this one) and, if so, closes the position at the price
  * the stop would really have filled at.
+ *
+ * Stops only fire while trading is open. During a halt (including the
+ * pre-open session before trading resumes) prices can move but nothing
+ * actually trades, so the stop waits until the reopen.
  *
  * Returns the account unchanged if nothing happened.
  */
@@ -216,11 +239,17 @@ export function checkStopLoss(
   candles: readonly Candle[],
   from: number,
   to: number,
+  halts: readonly Halt[] = [],
 ): Account {
   const { stopLoss, position } = account;
   if (stopLoss === null || position === 0) return account;
 
-  const hit = firstCrossing(candles, from, to, stopLoss, position > 0 ? "down" : "up");
+  const direction = position > 0 ? "down" : "up";
+  let hit = null;
+  for (const [start, end] of tradingWindows(halts, from, to)) {
+    hit = firstCrossing(candles, start, end, stopLoss, direction);
+    if (hit) break;
+  }
   if (!hit) return account;
 
   const result = placeOrder(
