@@ -42,7 +42,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "test": "jest"
+    "test": "jest",
+    "extract-days": "node scripts/extract-days.mjs"
   },
   "private": true,
   "jest": {
