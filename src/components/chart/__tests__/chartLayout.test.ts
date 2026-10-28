@@ -2,6 +2,7 @@ import { makeDay } from "@/engine/__fixtures__/makeDay";
 
 import {
   CANDLE_SPACING,
+  candleIndexAtX,
   computeLayout,
   PRICE_AXIS_WIDTH,
   TIME_AXIS_HEIGHT,
@@ -121,5 +122,22 @@ describe("computeLayout", () => {
 
     expect(layout.y(100)).toBeGreaterThan(layout.plot.top);
     expect(layout.y(100)).toBeLessThan(layout.plot.bottom);
+  });
+});
+
+describe("candleIndexAtX", () => {
+  it("finds the candle under the finger", () => {
+    // Candle 12 is the first visible one, each 8 pt wide
+    expect(candleIndexAtX(0, 0, 8, 12, 20)).toBe(12);
+    expect(candleIndexAtX(17, 0, 8, 12, 20)).toBe(14);
+  });
+
+  it("sticks to the ends when dragging past them", () => {
+    expect(candleIndexAtX(-30, 0, 8, 12, 20)).toBe(12);
+    expect(candleIndexAtX(500, 0, 8, 12, 20)).toBe(19);
+  });
+
+  it("returns -1 when there's nothing to point at", () => {
+    expect(candleIndexAtX(10, 0, 8, 0, 0)).toBe(-1);
   });
 });

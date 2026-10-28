@@ -28,6 +28,27 @@ export interface ChartLayout {
   priceAt: (y: number) => number;
 }
 
+/**
+ * Which candle sits under a touch at `x`. Clamped to the visible candles, so
+ * dragging past either end sticks to the first or last one.
+ *
+ * Runs on the UI thread during the crosshair gesture, which is why it takes
+ * plain numbers instead of a ChartLayout (its functions can't be called
+ * from a worklet).
+ */
+export function candleIndexAtX(
+  x: number,
+  plotLeft: number,
+  spacing: number,
+  firstIndex: number,
+  count: number,
+): number {
+  "worklet";
+  if (count === 0) return -1;
+  const index = firstIndex + Math.floor((x - plotLeft) / spacing);
+  return Math.min(count - 1, Math.max(firstIndex, index));
+}
+
 interface LayoutInput {
   candles: readonly Candle[];
   width: number;
