@@ -9,14 +9,15 @@ import { OrderPanel } from "@/components/replay/OrderPanel";
 import { PriceHeader } from "@/components/replay/PriceHeader";
 import { ReplayControls } from "@/components/replay/ReplayControls";
 import { TimeSlider } from "@/components/replay/TimeSlider";
-import { colors } from "@/constants/colors";
 import { findDay } from "@/data/catalog";
 import { loadDay } from "@/data/loadDay";
 import type { TradingDay } from "@/data/types";
 import { useReplay } from "@/hooks/useReplay";
 import { saveResult } from "@/state/sessionResults";
+import { type Palette, useThemedStyles } from "@/theme";
 
 export default function ReplayScreen() {
+  const styles = useThemedStyles(createStyles);
   const { day: id } = useLocalSearchParams<{ day: string }>();
   const entry = findDay(id);
 
@@ -33,6 +34,7 @@ export default function ReplayScreen() {
 }
 
 function Replay({ title, day }: { title: string; day: TradingDay }) {
+  const styles = useThemedStyles(createStyles);
   const replay = useReplay(day);
   const [notice, setNotice] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
@@ -128,41 +130,42 @@ function Replay({ title, day }: { title: string; day: TradingDay }) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    padding: 16,
-    gap: 12,
-  },
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  results: {
-    padding: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    backgroundColor: colors.text,
-  },
-  resultsText: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  reset: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: colors.down,
-  },
-  chart: {
-    height: 280,
-  },
-  notice: {
-    fontSize: 13,
-    color: colors.down,
-  },
-});
+const createStyles = (colors: Palette) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      padding: 16,
+      gap: 12,
+    },
+    center: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    results: {
+      padding: 14,
+      borderRadius: 8,
+      alignItems: "center",
+      backgroundColor: colors.text,
+    },
+    resultsText: {
+      color: colors.background,
+      fontSize: 15,
+      fontWeight: "700",
+    },
+    reset: {
+      fontSize: 15,
+      fontWeight: "600",
+      color: colors.down,
+    },
+    chart: {
+      height: 280,
+    },
+    notice: {
+      fontSize: 13,
+      color: colors.down,
+    },
+  });

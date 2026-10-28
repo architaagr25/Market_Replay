@@ -4,8 +4,8 @@ import { GestureDetector, usePanGesture } from "react-native-gesture-handler";
 import Animated, { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
-import { colors } from "@/constants/colors";
 import type { Halt } from "@/engine/halts";
+import { type Palette, useThemedStyles } from "@/theme";
 import { formatTime } from "@/utils/format";
 
 import { positionOfTime, timeAtPosition } from "./sliderMath";
@@ -27,6 +27,7 @@ interface Props {
  * React with updates.
  */
 export function TimeSlider({ time, start, end, halts, onSeek }: Props) {
+  const styles = useThemedStyles(createStyles);
   const [width, setWidth] = useState(0);
   const trackWidth = useSharedValue(0);
   const playhead = useSharedValue(time);
@@ -119,47 +120,48 @@ export function TimeSlider({ time, start, end, halts, onSeek }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  // Taller than the track so it's easy to grab with a thumb
-  hitArea: {
-    height: 32,
-    justifyContent: "center",
-  },
-  track: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.grid,
-    overflow: "hidden",
-  },
-  fill: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    backgroundColor: colors.up,
-  },
-  halt: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    backgroundColor: colors.warning,
-  },
-  thumb: {
-    position: "absolute",
-    left: -THUMB_SIZE / 2,
-    width: THUMB_SIZE,
-    height: THUMB_SIZE,
-    borderRadius: THUMB_SIZE / 2,
-    backgroundColor: "#fff",
-    borderWidth: 2,
-    borderColor: colors.up,
-  },
-  labels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  label: {
-    fontSize: 11,
-    color: colors.muted,
-  },
-});
+const createStyles = (colors: Palette) =>
+  StyleSheet.create({
+    // Taller than the track so it's easy to grab with a thumb
+    hitArea: {
+      height: 32,
+      justifyContent: "center",
+    },
+    track: {
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: colors.grid,
+      overflow: "hidden",
+    },
+    fill: {
+      position: "absolute",
+      left: 0,
+      top: 0,
+      bottom: 0,
+      backgroundColor: colors.up,
+    },
+    halt: {
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      backgroundColor: colors.warning,
+    },
+    thumb: {
+      position: "absolute",
+      left: -THUMB_SIZE / 2,
+      width: THUMB_SIZE,
+      height: THUMB_SIZE,
+      borderRadius: THUMB_SIZE / 2,
+      backgroundColor: colors.background,
+      borderWidth: 2,
+      borderColor: colors.up,
+    },
+    labels: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    label: {
+      fontSize: 11,
+      color: colors.muted,
+    },
+  });

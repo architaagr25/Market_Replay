@@ -15,10 +15,10 @@ import { GestureDetector, usePanGesture } from "react-native-gesture-handler";
 import { useDerivedValue, useSharedValue } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
-import { colors } from "@/constants/colors";
 import type { Candle } from "@/data/types";
 import type { Trade } from "@/engine/paperBroker";
 import { useMountAfterTransition } from "@/hooks/useMountAfterTransition";
+import { type Palette, usePalette, useThemedStyles } from "@/theme";
 import { formatPrice, formatTime } from "@/utils/format";
 
 import { priceTicks, timeTicks } from "./axes";
@@ -60,6 +60,8 @@ export function CandleChart({
   trades,
   fitAll = false,
 }: Props) {
+  const colors = usePalette();
+  const styles = useThemedStyles(createStyles);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const canvasReady = useMountAfterTransition();
 
@@ -97,11 +99,22 @@ export function CandleChart({
     const downBodies = Skia.PathBuilder.Make();
     const upWicks = Skia.PathBuilder.Make();
     const downWicks = Skia.PathBuilder.Make();
+    const flats = Skia.PathBuilder.Make();
 
     for (let i = layout.firstIndex; i < candles.length; i++) {
       const candle = candles[i]!;
-      const up = candle.close >= candle.open;
       const cx = layout.x(i);
+
+      // A minute where the price never moved (a halt) is neither up nor down,
+      // so it gets a neutral dash instead of looking like a tiny green candle
+      if (candle.high === candle.low) {
+        const y = layout.y(candle.close);
+        flats.moveTo(cx - bodyWidth / 2, y);
+        flats.lineTo(cx + bodyWidth / 2, y);
+        continue;
+      }
+
+      const up = candle.close >= candle.open;
 
       const wicks = up ? upWicks : downWicks;
       wicks.moveTo(cx, layout.y(candle.high));
@@ -117,6 +130,7 @@ export function CandleChart({
     }
 
     return {
+      flats: flats.detach(),
       upBodies: upBodies.detach(),
       downBodies: downBodies.detach(),
       upWicks: upWicks.detach(),
@@ -274,6 +288,12 @@ export function CandleChart({
               strokeWidth={1}
             />
             <Path path={paths.upBodies} color={colors.up} />
+            <Path
+              path={paths.flats}
+              color={colors.flat}
+              style="stroke"
+              strokeWidth={1.5}
+            />
             <Path path={paths.downBodies} color={colors.down} />
 
             <Path path={markerPaths.buys} color={colors.up} />
@@ -332,7 +352,7 @@ export function CandleChart({
               y={lastY + LABEL_SIZE / 3}
               text={formatPrice(lastPrice)}
               font={font}
-              color="#ffffff"
+              color={colors.onAccent}
             />
 
             <Line
@@ -359,8 +379,9 @@ export function CandleChart({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+const createStyles = (colors: Palette) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+  });

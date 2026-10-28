@@ -3,16 +3,17 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CandleChart } from "@/components/chart/CandleChart";
-import { colors } from "@/constants/colors";
 import { findDay } from "@/data/catalog";
 import { loadDay } from "@/data/loadDay";
 import type { TradingDay } from "@/data/types";
 import { type Account, STARTING_CASH } from "@/engine/paperBroker";
 import { summarizeSession } from "@/engine/sessionSummary";
 import { getResult } from "@/state/sessionResults";
+import { type Palette, usePalette, useThemedStyles } from "@/theme";
 import { formatRupees } from "@/utils/format";
 
 export default function ResultScreen() {
+  const styles = useThemedStyles(createStyles);
   const { day: id } = useLocalSearchParams<{ day: string }>();
   const entry = findDay(id);
   const account = getResult(id);
@@ -40,6 +41,8 @@ function Result({
   day: TradingDay;
   account: Account;
 }) {
+  const colors = usePalette();
+  const styles = useThemedStyles(createStyles);
   const summary = summarizeSession(account, day);
   const vsHold = summary.netPnl - summary.buyAndHold.pnl;
   const didNothing = summary.tradeCount === 0;
@@ -54,7 +57,7 @@ function Result({
 
       <View style={styles.hero}>
         <Text style={styles.caption}>{title}</Text>
-        <Text style={[styles.pnl, { color: pnlColor(summary.netPnl) }]}>
+        <Text style={[styles.pnl, { color: pnlColor(summary.netPnl, colors) }]}>
           {formatRupees(summary.netPnl, { signed: true })}
         </Text>
         <Text style={styles.caption}>
@@ -79,13 +82,15 @@ function Result({
         <Text style={styles.body}>
           Buying {summary.buyAndHold.quantity} units at the open and holding to the close
           would have made{" "}
-          <Text style={{ color: pnlColor(summary.buyAndHold.pnl), fontWeight: "600" }}>
+          <Text
+            style={{ color: pnlColor(summary.buyAndHold.pnl, colors), fontWeight: "600" }}
+          >
             {formatRupees(summary.buyAndHold.pnl, { signed: true })}
           </Text>
           .
         </Text>
         {!didNothing && (
-          <Text style={[styles.verdict, { color: pnlColor(vsHold) }]}>
+          <Text style={[styles.verdict, { color: pnlColor(vsHold, colors) }]}>
             {vsHold >= 0 ? "You beat it by " : "You trailed it by "}
             {formatRupees(Math.abs(vsHold))}
           </Text>
@@ -126,6 +131,7 @@ function Result({
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.stat}>
       <Text style={styles.caption}>{label}</Text>
@@ -143,6 +149,7 @@ function Button({
   onPress: () => void;
   secondary?: boolean;
 }) {
+  const styles = useThemedStyles(createStyles);
   return (
     <Pressable
       style={({ pressed }) => [
@@ -160,115 +167,116 @@ function Button({
   );
 }
 
-function pnlColor(amount: number) {
+function pnlColor(amount: number, colors: Palette) {
   if (Math.abs(amount) < 0.005) return colors.text;
   return amount > 0 ? colors.up : colors.down;
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.screen,
-  },
-  content: {
-    padding: 16,
-    gap: 16,
-  },
-  empty: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 16,
-    padding: 24,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: colors.muted,
-  },
-  hero: {
-    alignItems: "center",
-    gap: 4,
-    paddingVertical: 8,
-  },
-  pnl: {
-    fontSize: 36,
-    fontWeight: "800",
-    fontVariant: ["tabular-nums"],
-  },
-  caption: {
-    fontSize: 13,
-    color: colors.muted,
-    textAlign: "center",
-  },
-  chart: {
-    height: 220,
-    padding: 8,
-    borderRadius: 12,
-    backgroundColor: colors.background,
-  },
-  card: {
-    gap: 6,
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: colors.background,
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: colors.text,
-  },
-  body: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.text,
-  },
-  verdict: {
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  stats: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  stat: {
-    flexGrow: 1,
-    flexBasis: "30%",
-    padding: 12,
-    gap: 2,
-    borderRadius: 10,
-    backgroundColor: colors.background,
-  },
-  statValue: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: colors.text,
-    fontVariant: ["tabular-nums"],
-  },
-  actions: {
-    gap: 10,
-  },
-  button: {
-    height: 48,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.up,
-  },
-  buttonSecondary: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  buttonTextSecondary: {
-    color: colors.text,
-  },
-});
+const createStyles = (colors: Palette) =>
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.screen,
+    },
+    content: {
+      padding: 16,
+      gap: 16,
+    },
+    empty: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 16,
+      padding: 24,
+    },
+    emptyText: {
+      fontSize: 15,
+      color: colors.muted,
+    },
+    hero: {
+      alignItems: "center",
+      gap: 4,
+      paddingVertical: 8,
+    },
+    pnl: {
+      fontSize: 36,
+      fontWeight: "800",
+      fontVariant: ["tabular-nums"],
+    },
+    caption: {
+      fontSize: 13,
+      color: colors.muted,
+      textAlign: "center",
+    },
+    chart: {
+      height: 220,
+      padding: 8,
+      borderRadius: 12,
+      backgroundColor: colors.background,
+    },
+    card: {
+      gap: 6,
+      padding: 16,
+      borderRadius: 12,
+      backgroundColor: colors.background,
+    },
+    cardTitle: {
+      fontSize: 15,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    body: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: colors.text,
+    },
+    verdict: {
+      fontSize: 15,
+      fontWeight: "700",
+    },
+    stats: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+    },
+    stat: {
+      flexGrow: 1,
+      flexBasis: "30%",
+      padding: 12,
+      gap: 2,
+      borderRadius: 10,
+      backgroundColor: colors.background,
+    },
+    statValue: {
+      fontSize: 16,
+      fontWeight: "700",
+      color: colors.text,
+      fontVariant: ["tabular-nums"],
+    },
+    actions: {
+      gap: 10,
+    },
+    button: {
+      height: 48,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.up,
+    },
+    buttonSecondary: {
+      backgroundColor: "transparent",
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    buttonText: {
+      color: colors.onAccent,
+      fontSize: 16,
+      fontWeight: "700",
+    },
+    buttonTextSecondary: {
+      color: colors.text,
+    },
+  });

@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors } from "@/constants/colors";
 import { SPEEDS } from "@/engine/replayClock";
+import { type Palette, usePalette, useThemedStyles } from "@/theme";
 import { formatTime } from "@/utils/format";
 
 interface Props {
@@ -24,6 +24,8 @@ export function ReplayControls({
   onPause,
   onSpeedChange,
 }: Props) {
+  const colors = usePalette();
+  const styles = useThemedStyles(createStyles);
   const icon = isPlaying ? "pause" : isFinished ? "refresh" : "play";
   const label = isPlaying ? "Pause" : isFinished ? "Replay from the open" : "Play";
 
@@ -36,7 +38,7 @@ export function ReplayControls({
         accessibilityLabel={label}
         hitSlop={8}
       >
-        <Ionicons name={icon} size={22} color="#fff" />
+        <Ionicons name={icon} size={22} color={colors.onAccent} />
       </Pressable>
 
       <Text style={styles.clock} accessibilityLabel={`Market time ${formatTime(time)}`}>
@@ -66,53 +68,54 @@ export function ReplayControls({
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  playButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.up,
-  },
-  pressed: {
-    opacity: 0.8,
-  },
-  clock: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.text,
-    fontVariant: ["tabular-nums"],
-    minWidth: 52,
-  },
-  speeds: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 4,
-  },
-  speed: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: colors.grid,
-  },
-  speedSelected: {
-    backgroundColor: colors.text,
-    borderColor: colors.text,
-  },
-  speedText: {
-    fontSize: 13,
-    color: colors.muted,
-    fontWeight: "500",
-  },
-  speedTextSelected: {
-    color: "#fff",
-  },
-});
+const createStyles = (colors: Palette) =>
+  StyleSheet.create({
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    playButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.up,
+    },
+    pressed: {
+      opacity: 0.8,
+    },
+    clock: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: colors.text,
+      fontVariant: ["tabular-nums"],
+      minWidth: 52,
+    },
+    speeds: {
+      flex: 1,
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      gap: 4,
+    },
+    speed: {
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: colors.grid,
+    },
+    speedSelected: {
+      backgroundColor: colors.text,
+      borderColor: colors.text,
+    },
+    speedText: {
+      fontSize: 13,
+      color: colors.muted,
+      fontWeight: "500",
+    },
+    speedTextSelected: {
+      color: colors.background,
+    },
+  });
