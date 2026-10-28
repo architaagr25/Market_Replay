@@ -174,6 +174,20 @@ describe("useReplay", () => {
     expect(result.current.account.trades).toEqual([]);
   });
 
+  it("restarts from the open with a fresh account after the close", async () => {
+    const { result } = await setup();
+    await act(async () => {
+      result.current.placeOrder("buy", 1);
+      result.current.seek(OPEN + 4 * MINUTE);
+    });
+
+    await act(async () => result.current.restart());
+
+    expect(result.current.time).toBe(OPEN);
+    expect(result.current.isPlaying).toBe(true);
+    expect(result.current.account.trades).toEqual([]);
+  });
+
   it("allows rewinding freely before trading", async () => {
     const { result } = await setup();
 

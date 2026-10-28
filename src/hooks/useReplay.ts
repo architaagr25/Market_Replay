@@ -157,6 +157,13 @@ export function useReplay(day: TradingDay) {
     commitAccount(createAccount());
   }, [clock, commitAccount]);
 
+  /** Fresh account, from the open, already playing. */
+  const restart = useCallback(() => {
+    reset();
+    clock.play();
+    setIsPlaying(true);
+  }, [reset, clock]);
+
   const placeOrder = useCallback(
     (side: Side, quantity: number): BrokerResult => {
       // Read the clock directly rather than `time` from the last render, so the
@@ -204,6 +211,7 @@ export function useReplay(day: TradingDay) {
     setSpeed,
     seek,
     reset,
+    restart,
     placeOrder,
     setStopLoss,
   };

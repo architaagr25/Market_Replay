@@ -1,7 +1,8 @@
 import { Stack, useLocalSearchParams } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { CandleChart } from "@/components/chart/CandleChart";
+import { ReplayControls } from "@/components/replay/ReplayControls";
 import { colors } from "@/constants/colors";
 import { findDay } from "@/data/catalog";
 import { loadDay } from "@/data/loadDay";
@@ -39,12 +40,15 @@ function Replay({ title, day }: { title: string; day: TradingDay }) {
           lastPrice={replay.snapshot.lastPrice}
         />
       </View>
-      <Pressable
-        style={styles.button}
-        onPress={replay.isPlaying ? replay.pause : replay.play}
-      >
-        <Text style={styles.buttonText}>{replay.isPlaying ? "Pause" : "Play"}</Text>
-      </Pressable>
+      <ReplayControls
+        time={replay.time}
+        isPlaying={replay.isPlaying}
+        isFinished={replay.isFinished}
+        speed={replay.speed}
+        onPlay={replay.isFinished ? replay.restart : replay.play}
+        onPause={replay.pause}
+        onSpeedChange={replay.setSpeed}
+      />
     </View>
   );
 }
@@ -69,17 +73,5 @@ const styles = StyleSheet.create({
   },
   chart: {
     height: 320,
-  },
-  button: {
-    alignSelf: "flex-start",
-    backgroundColor: colors.up,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
   },
 });
