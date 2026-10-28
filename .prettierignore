@@ -5,3 +5,4 @@ ios
 package-lock.json
 assets
 src/data/days
+expo-env.d.ts
