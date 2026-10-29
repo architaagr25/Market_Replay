@@ -6,6 +6,14 @@ Pick a day, press play and watch the Nifty 50 move exactly as it did, at up to 3
 
 Built with React Native (Expo SDK 58, TypeScript), Skia, Reanimated and Gesture Handler.
 
+**[Download the Android APK](https://github.com/architaagr25/Market_Replay/releases/latest/download/market_replay.apk)** · [Full demo video](https://github.com/architaagr25/Market_Replay/releases/latest/download/demo.mp4)
+
+<p align="center">
+  <img src="docs/demo.gif" alt="Replaying and paper trading 13 March 2020" width="270">
+</p>
+
+<p align="center"><sub>Replaying 13 March 2020. The recording is sped up 3×.</sub></p>
+
 ## Days included
 
 | Day             | What happened                                                                                                                               |
@@ -47,7 +55,7 @@ A few behaviours worth knowing about:
 
 ## Running it
 
-Requires Node 20 or newer. All native modules used are included in Expo Go, so no native build is needed.
+The quickest way to try it is the [APK](https://github.com/architaagr25/Market_Replay/releases/latest/download/market_replay.apk) (Android). To run it from source you need Node 20 or newer. All native modules used are included in Expo Go, so no native build is needed.
 
 ```bash
 npm install
