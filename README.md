@@ -76,7 +76,7 @@ The engine is tested against the claims above, not just the happy path. A few ex
 
 ## Data
 
-Minute data for the Nifty 50 index comes from a public Kaggle dataset of Indian index prices by **debashis74017**, released under **CC0: Public Domain**. [`scripts/extract-days.mjs`](scripts/extract-days.mjs) streams the full CSV (about a million rows) and writes each chosen day as a small JSON file in [`src/data/days`](src/data/days):
+Minute data for the Nifty 50 index comes from the [NIFTY 50 minute data](https://www.kaggle.com/datasets/debashis74017/nifty-50-minute-data) dataset on Kaggle by **debashis74017**, released under **CC0: Public Domain**. [`scripts/extract-days.mjs`](scripts/extract-days.mjs) streams the full CSV (about a million rows) and writes each chosen day as a small JSON file in [`src/data/days`](src/data/days):
 
 ```bash
 npm run extract-days -- "<path to NIFTY 50_minute.csv>" 2024-06-04
