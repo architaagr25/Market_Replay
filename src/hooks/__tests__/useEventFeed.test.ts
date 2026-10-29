@@ -38,7 +38,7 @@ describe("useEventFeed", () => {
 
   it("can be dismissed, and the next event still appears", async () => {
     const { result, rerender } = await renderHook(
-      ({ time }) => useEventFeed(events, time),
+      ({ time }: { time: number }) => useEventFeed(events, time),
       {
         initialProps: { time: 150 },
       },

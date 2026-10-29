@@ -25,5 +25,9 @@ export function useEventFeed(events: readonly MarketEvent[], time: number) {
     return () => clearTimeout(timer);
   }, [visible]);
 
-  return { event: visible, dismiss: () => visible && setDismissedId(visible.id) };
+  const dismiss = () => {
+    if (visible) setDismissedId(visible.id);
+  };
+
+  return { event: visible, dismiss };
 }
