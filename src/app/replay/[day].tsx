@@ -16,6 +16,7 @@ import type { TradingDay } from "@/data/types";
 import { eventsForDay } from "@/engine/events";
 import { useEventFeed } from "@/hooks/useEventFeed";
 import { useReplay } from "@/hooks/useReplay";
+import { useStopHitFeedback } from "@/hooks/useStopHitFeedback";
 import { saveResult } from "@/state/sessionResults";
 import { type Palette, useThemedStyles } from "@/theme";
 
@@ -27,7 +28,11 @@ export default function ReplayScreen() {
   if (!entry) {
     return (
       <View style={styles.center}>
-        <Text>No replay for {id}</Text>
+        <Stack.Screen options={{ title: "Not found" }} />
+        <Text style={styles.missing}>No replay found for {id}.</Text>
+        <Pressable onPress={() => router.dismissAll()} accessibilityRole="button">
+          <Text style={styles.missingLink}>Pick a day</Text>
+        </Pressable>
       </View>
     );
   }
@@ -41,6 +46,7 @@ function Replay({ entry, day }: { entry: DayEntry; day: TradingDay }) {
   const replay = useReplay(day);
   const events = useMemo(() => eventsForDay(day, entry.news), [day, entry.news]);
   const feed = useEventFeed(events, replay.time);
+  useStopHitFeedback(replay.account.trades);
   const [notice, setNotice] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
 
@@ -159,6 +165,17 @@ const createStyles = (colors: Palette) =>
       flex: 1,
       alignItems: "center",
       justifyContent: "center",
+      gap: 12,
+      backgroundColor: colors.screen,
+    },
+    missing: {
+      fontSize: 15,
+      color: colors.muted,
+    },
+    missingLink: {
+      fontSize: 15,
+      fontWeight: "600",
+      color: colors.up,
     },
     results: {
       padding: 14,

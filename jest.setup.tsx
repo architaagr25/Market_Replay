@@ -5,3 +5,10 @@ jest.mock("@expo/vector-icons", () => {
   const Icon = ({ name }: { name: string }) => <Text>{name}</Text>;
   return { Ionicons: Icon };
 });
+
+// No vibration motor under Jest
+jest.mock("expo-haptics", () => ({
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  selectionAsync: jest.fn(() => Promise.resolve()),
+  NotificationFeedbackType: { Success: "success", Warning: "warning", Error: "error" },
+}));

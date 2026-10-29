@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SPEEDS } from "@/engine/replayClock";
 import { type Palette, usePalette, useThemedStyles } from "@/theme";
 import { formatTime } from "@/utils/format";
+import { haptics } from "@/utils/haptics";
 
 interface Props {
   time: number;
@@ -52,7 +53,10 @@ export function ReplayControls({
             <Pressable
               key={option}
               style={[styles.speed, selected && styles.speedSelected]}
-              onPress={() => onSpeedChange(option)}
+              onPress={() => {
+                haptics.selection();
+                onSpeedChange(option);
+              }}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
               accessibilityLabel={`${option} times speed`}

@@ -1,5 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
 
+import * as Haptics from "expo-haptics";
+
 import { type Account, createAccount, placeOrder } from "@/engine/paperBroker";
 
 import { OrderPanel } from "../OrderPanel";
@@ -123,5 +125,19 @@ describe("OrderPanel", () => {
     await fireEvent.press(screen.getByText("Remove"));
 
     expect(props.onSetStopLoss).toHaveBeenCalledWith(null);
+  });
+
+  it("buzzes on a fill and differently on a rejection", async () => {
+    const onOrder = jest
+      .fn()
+      .mockReturnValueOnce({ ok: true, account: createAccount() })
+      .mockReturnValueOnce({ ok: false, reason: "Not enough funds" });
+    await setup({ onOrder });
+
+    await fireEvent.press(screen.getByText("Buy"));
+    await fireEvent.press(screen.getByText("Buy"));
+
+    expect(Haptics.notificationAsync).toHaveBeenNthCalledWith(1, "success");
+    expect(Haptics.notificationAsync).toHaveBeenNthCalledWith(2, "error");
   });
 });

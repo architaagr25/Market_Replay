@@ -12,6 +12,7 @@ import {
 } from "@/engine/paperBroker";
 import { type Palette, usePalette, useThemedStyles } from "@/theme";
 import { formatPrice, formatRupees } from "@/utils/format";
+import { haptics } from "@/utils/haptics";
 
 interface Props {
   account: Account;
@@ -28,9 +29,15 @@ export function OrderPanel({ account, price, isHalted, onOrder, onSetStopLoss }:
   const [stopText, setStopText] = useState("");
   const [message, setMessage] = useState<string | null>(null);
 
-  const report = (result: BrokerResult) => setMessage(result.ok ? null : result.reason);
+  const report = (result: BrokerResult) => {
+    setMessage(result.ok ? null : result.reason);
+    if (!result.ok) haptics.rejected();
+    return result;
+  };
 
-  const order = (side: Side) => report(onOrder(side, quantity));
+  const order = (side: Side) => {
+    if (report(onOrder(side, quantity)).ok) haptics.filled();
+  };
 
   const setStop = () => {
     const level = Number(stopText.replace(/,/g, ""));
